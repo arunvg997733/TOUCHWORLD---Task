@@ -5,7 +5,16 @@ const kBlack = Colors.black;
 const kBlue = Colors.blue;
 const kRed = Colors.red;
 
+const height10 = SizedBox(
+  height: 10,
+);
+const height20 = SizedBox(
+  height: 20,
+);
+const height30 = SizedBox(
+  height: 30,
+);
 
-Widget textStyleWidget(String text,double size,Color color){
-  return Text(text,style: TextStyle(fontSize: size,color: color),);
-}
+const width10 = SizedBox(
+  width: 10,
+);

@@ -1,14 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mapview/core/apikey.dart';
+import 'package:mapview/view/map_screen/widget.dart';
 
 class LocationController extends GetxController {
   List<LatLng> polylinePointerList = [];
   LatLng startPoint = const LatLng(0, 0);
   LatLng endPoint = const LatLng(0, 0);
   RxString text = 'Select Start Point by tap'.obs;
-  RxString text2 = 'Get Route'.obs;
+  Marker marker = const Marker(markerId: MarkerId('3'));
+  BitmapDescriptor carIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor startIcon = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor endIcon = BitmapDescriptor.defaultMarker;
 
   getStartPoint(LatLng position) {
     startPoint = position;
@@ -23,50 +28,61 @@ class LocationController extends GetxController {
   }
 
   getPolylinePoint() async {
-    text2.value = 'Clear';
-    print('Start');
     PolylinePoints polylinePoints = PolylinePoints();
-
     try {
-      PolylineResult _result = await polylinePoints.getRouteBetweenCoordinates(
-          apiKey,
-          PointLatLng(startPoint.latitude, startPoint.longitude),
-          PointLatLng(endPoint.latitude, endPoint.longitude));
-      if (_result.points.isNotEmpty) {
-        _result.points.forEach((element) {
-          polylinePointerList.add(LatLng(element.latitude, element.longitude));
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        apiKey,
+        PointLatLng(startPoint.latitude, startPoint.longitude),
+        PointLatLng(endPoint.latitude, endPoint.longitude),
+      );
+      if (result.points.isNotEmpty) {
+        result.points.forEach((element) {
+          polylinePointerList.add(
+            LatLng(element.latitude, element.longitude),
+          );
         });
-      } else {
-        print('empty');
       }
     } catch (e) {
-      print("Arun $e");
+      showSnacksBar("Error", e.toString());
     }
     update();
   }
 
-  clear(){
-   polylinePointerList = [];
-   startPoint = const LatLng(0, 0);
-   endPoint = const LatLng(0, 0);
-   text.value = 'Select Start Point by tap';
+  clear() {
+    polylinePointerList = [];
+    startPoint = const LatLng(0, 0);
+    endPoint = const LatLng(0, 0);
+    text.value = 'Select Start Point by tap';
     update();
   }
 
-  //http//
-// getroute()async{
+  void animatedCarMoving() async {
+    for (double i = 0.0; i < 1.0; i += 0.01) {
+      LatLng newPosition = LatLng(
+        startPoint.latitude + i * (endPoint.latitude - startPoint.latitude),
+        startPoint.longitude + i * (endPoint.longitude - startPoint.longitude),
+      );
+      marker = marker.copyWith(positionParam: newPosition);
+      update();
+      
+      await Future.delayed(
+        const Duration(milliseconds: 25),
+      );
+    }
+  }
 
-//   final response =await Dio(BaseOptions()).get('https://maps.googleapis.com/maps/api/directions/json',queryParameters: {
-//     'origin':'10.527638941814725, 76.21477687419419',
-//     'destination':'10.30667011234486, 76.33422921210598',
-//     'key':'AIzaSyC62522V8c1EpIhl4DisiYm8Lh6C2q2Now'
-//   });
+  getCarIcon() {
+    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, 'asset/Car.png')
+        .then((value) => carIcon = value);
+  }
 
-//   print(response.statusCode);
-//   if(response.statusCode == 200){
-//     final data =await jsonDecode(response.data);
-//     print(data.toString());
-//   }
+  getStartIcon() {
+    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, 'asset/Start.png')
+        .then((value) => startIcon = value);
+  }
 
-// }
+  getEndIcon() {
+    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, 'asset/End.png')
+        .then((value) => endIcon = value);
+  }
 }
